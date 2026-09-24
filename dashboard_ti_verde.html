@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — TI Verde e Sustentabilidade</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+:root{--bg:#f4f7f5;--card:#fff;--ink:#17221b;--muted:#647067;--line:#dfe7e1;--accent:#238b57;--accent2:#0d6b43;--soft:#e9f5ee}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#123c29,#238b57);color:white;padding:34px 5vw 38px}
+header h1{margin:0 0 8px;font-size:30px}header p{margin:0;opacity:.9;max-width:850px}
+main{max-width:1250px;margin:-18px auto 50px;padding:0 20px}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 6px 20px rgba(20,50,30,.06)}
+.kpi .num{font-size:30px;font-weight:800;color:var(--accent2)}.kpi .label{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.35}
+.section{margin-top:22px}.section h2{font-size:20px;margin:0 0 12px}.section p{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 6px 20px rgba(20,50,30,.05)}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}.chart{min-height:390px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.filters label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:5px}
+select{min-width:180px;border:1px solid var(--line);border-radius:9px;padding:9px;background:white;color:var(--ink)}
+.note{font-size:12px;color:var(--muted);margin-top:12px}.full{grid-column:1/-1}
+footer{max-width:1250px;margin:0 auto 30px;padding:0 20px;color:var(--muted);font-size:12px}
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}
+@media(max-width:520px){.grid{grid-template-columns:1fr}header h1{font-size:24px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Dashboard Interativo — TI Verde e Sustentabilidade</h1>
+  <p>Visualização dos resultados da pesquisa com participantes e empresas. Os indicadores são calculados diretamente a partir das respostas coletadas.</p>
+</header>
+<main>
+<section class="section">
+<div class="grid" id="kpis"></div>
+</section>
+
+<section class="section card">
+  <h2>Filtros da pesquisa com participantes</h2>
+  <div class="filters">
+    <label>Faixa etária<select id="age"></select></label>
+    <label>Relação com tecnologia<select id="relation"></select></label>
+  </div>
+  <div class="charts">
+    <div id="c1" class="chart"></div>
+    <div id="c2" class="chart"></div>
+    <div id="c3" class="chart"></div>
+    <div id="c4" class="chart"></div>
+  </div>
+  <div class="note">Base: respostas individuais. N = 17 na coleta enviada.</div>
+</section>
+
+<section class="section card">
+  <h2>Indicadores das empresas participantes</h2>
+  <div class="filters">
+    <label>Ramo de atuação<select id="sector"></select></label>
+  </div>
+  <div class="charts">
+    <div id="e1" class="chart"></div>
+    <div id="e2" class="chart"></div>
+    <div id="e3" class="chart"></div>
+    <div id="e4" class="chart"></div>
+  </div>
+  <div class="note">Base: respostas empresariais. N = 3 empresas na coleta enviada. Percentuais são proporções das empresas respondentes, não uma estimativa de todo o mercado.</div>
+</section>
+
+<section class="section card">
+  <h2>Leitura dos resultados</h2>
+  <div id="insights"></div>
+</section>
+</main>
+<footer>Dashboard acadêmico — dados provenientes das planilhas fornecidas para a pesquisa de TI Verde e Sustentabilidade.</footer>
+
+<script>
+const DB = {"people": [{"age": "25 a 34 anos", "relation": "Estudante e trabalhador(a)", "device": "Celular/smartphone", "hours": "De 4 a 6 horas", "turnoff": "Sempre", "energy": "Nunca", "purchase": "Sempre", "disposal": "Guardo em casa", "know_disposal": "Sim", "recycle": "Sim", "greenit": "Sim", "impact": "Sim", "practice": "Economizar energia", "change": "Sim", "ods12": "Não", "importance": "Muito importante"}, {"age": "35 a 44 anos", "relation": "Trabalhador(a)", "device": "Notebook", "hours": "Mais de 8 horas", "turnoff": "Às vezes", "energy": "Às vezes", "purchase": "Raramente", "disposal": "Dou para outra pessoa", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Consertar equipamentos antes de substituí-los", "change": "Sim", "ods12": "Não", "importance": "Importante"}, {"age": "35 a 44 anos", "relation": "Trabalhador(a)", "device": "Celular/smartphone", "hours": "Mais de 8 horas", "turnoff": "Raramente", "energy": "Às vezes", "purchase": "Frequentemente", "disposal": "Dou para outra pessoa", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Economizar energia", "change": "Sim", "ods12": "Não", "importance": "Muito importante"}, {"age": "45 a 54 anos", "relation": "Trabalhador(a)", "device": "Notebook", "hours": "Mais de 8 horas", "turnoff": "Às vezes", "energy": "Nunca", "purchase": "Nunca", "disposal": "Outro", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Outro", "change": "Sim", "ods12": "Não", "importance": "Muito importante"}, {"age": "25 a 34 anos", "relation": "Prefiro não informar", "device": "Celular/smartphone", "hours": "De 2 a 4 horas", "turnoff": "Nunca", "energy": "Sempre", "purchase": "Às vezes", "disposal": "Tento consertar", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Aumentar a vida útil dos equipamentos", "change": "Sim", "ods12": "Não", "importance": "Importante"}, {"age": "45 a 54 anos", "relation": "Trabalhador(a)", "device": "Celular/smartphone", "hours": "Mais de 8 horas", "turnoff": "Raramente", "energy": "Raramente", "purchase": "Às vezes", "disposal": "Jogo no lixo comum", "know_disposal": "Tenho alguma ideia, mas não tenho certeza", "recycle": "Não sabia que isso era possível", "greenit": "Não", "impact": "Sim", "practice": "Reciclar lixo eletrônico", "change": "Sim", "ods12": "Já ouvi falar, mas não conheço bem", "importance": "Importante"}, {"age": "25 a 34 anos", "relation": "Trabalhador(a)", "device": "Notebook", "hours": "Mais de 8 horas", "turnoff": "Às vezes", "energy": "Sempre", "purchase": "Raramente", "disposal": "Guardo em casa", "know_disposal": "Tenho alguma ideia, mas não tenho certeza", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Comprar equipamentos mais eficientes", "change": "Sim", "ods12": "Não", "importance": "Muito importante"}, {"age": "25 a 34 anos", "relation": "Estudante e trabalhador(a)", "device": "Celular/smartphone", "hours": "Mais de 8 horas", "turnoff": "Raramente", "energy": "Frequentemente", "purchase": "Sempre", "disposal": "Tento consertar", "know_disposal": "Tenho alguma ideia, mas não tenho certeza", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Reciclar lixo eletrônico", "change": "Sim", "ods12": "Não", "importance": "Muito importante"}, {"age": "18 a 24 anos", "relation": "Estudante e trabalhador(a)", "device": "Celular/smartphone", "hours": "Mais de 8 horas", "turnoff": "Às vezes", "energy": "Frequentemente", "purchase": "Sempre", "disposal": "Tento consertar", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Aumentar a vida útil dos equipamentos", "change": "Sim", "ods12": "Sim", "importance": "Muito importante"}, {"age": "35 a 44 anos", "relation": "Prefiro não informar", "device": "Celular/smartphone", "hours": "Mais de 8 horas", "turnoff": "Raramente", "energy": "Raramente", "purchase": "Sempre", "disposal": "Dou para outra pessoa", "know_disposal": "Tenho alguma ideia, mas não tenho certeza", "recycle": "Não", "greenit": "Não", "impact": "Não sei informar", "practice": "Economizar energia", "change": "Sim", "ods12": "Não", "importance": "Muito importante"}, {"age": "18 a 24 anos", "relation": "Estudante e trabalhador(a)", "device": "Celular/smartphone", "hours": "De 4 a 6 horas", "turnoff": "Frequentemente", "energy": "Frequentemente", "purchase": "Frequentemente", "disposal": "Guardo em casa", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Economizar energia", "change": "Sim", "ods12": "Não", "importance": "Importante"}, {"age": "45 a 54 anos", "relation": "Prefiro não informar", "device": "Celular/smartphone", "hours": "De 2 a 4 horas", "turnoff": "Frequentemente", "energy": "Raramente", "purchase": "Sempre", "disposal": "Guardo em casa", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Utilizar serviços digitais/computação em nuvem de forma consciente", "change": "Talvez", "ods12": "Não", "importance": "Importante"}, {"age": "25 a 34 anos", "relation": "Prefiro não informar", "device": "Celular/smartphone", "hours": "Mais de 8 horas", "turnoff": "Nunca", "energy": "Sempre", "purchase": "Nunca", "disposal": "Outro", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Não sei informar", "practice": "Outro", "change": "Talvez", "ods12": "Não", "importance": "Muito importante"}, {"age": "35 a 44 anos", "relation": "Trabalhador(a)", "device": "Computador de mesa", "hours": "De 2 a 4 horas", "turnoff": "Sempre", "energy": "Às vezes", "purchase": "Frequentemente", "disposal": "Guardo em casa", "know_disposal": "Tenho alguma ideia, mas não tenho certeza", "recycle": "Não", "greenit": "Sim", "impact": "Sim", "practice": "Economizar energia", "change": "Sim", "ods12": "Não", "importance": "Muito importante"}, {"age": "Até 17 anos", "relation": "Estudante", "device": "Celular/smartphone", "hours": "De 6 a 8 horas", "turnoff": "Frequentemente", "energy": "Às vezes", "purchase": "Raramente", "disposal": "Vendo", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Não", "practice": "Utilizar serviços digitais/computação em nuvem de forma consciente", "change": "Sim", "ods12": "Não", "importance": "Importante"}, {"age": "25 a 34 anos", "relation": "Estudante", "device": "Celular/smartphone", "hours": "De 4 a 6 horas", "turnoff": "Às vezes", "energy": "Às vezes", "purchase": "Às vezes", "disposal": "Guardo em casa", "know_disposal": "Sim", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Comprar equipamentos mais eficientes", "change": "Sim", "ods12": "Não", "importance": "Importante"}, {"age": "25 a 34 anos", "relation": "Trabalhador(a)", "device": "Celular/smartphone", "hours": "De 2 a 4 horas", "turnoff": "Às vezes", "energy": "Às vezes", "purchase": "Às vezes", "disposal": "Vendo", "know_disposal": "Não", "recycle": "Não", "greenit": "Não", "impact": "Sim", "practice": "Desligar equipamentos quando não utilizados", "change": "Sim", "ods12": "Não", "importance": "Importante"}], "companies": [{"name": "Biano Produções Artísticas", "sector": "Audiovisual", "employees": 1, "equipment": "Computadores de mesa, Notebooks, Celulares/smartphones, Equipamentos de áudio", "energy_practice": "Sim", "energy_actions": "Desligar equipamentos quando não estão em uso", "efficient": "Sim", "old_equipment": "São doados", "recycling": "Não", "repair": "Substituir por outro", "cloud": "Sim", "cloud_benefit": "Facilidade de acesso aos dados", "sustain_benefit": "Redução de custos", "policy": "Está em implantação"}, {"name": "TDLIBRAS - Curso de Libras", "sector": "Educação", "employees": 1, "equipment": "Notebooks, Celulares/smartphones, Impressoras, Equipamentos de áudio, Equipamentos de rede", "energy_practice": "Sim", "energy_actions": "Desligar equipamentos quando não estão em uso", "efficient": "Parcialmente", "old_equipment": "São doados", "recycling": "Sim", "repair": "Depende do problema e do custo", "cloud": "Sim", "cloud_benefit": "Facilidade de acesso aos dados, Maior flexibilidade", "sustain_benefit": "Economia de energia, Redução de custos, Maior vida útil dos equipamentos", "policy": "Sim"}, {"name": "https://cardaply.shop/", "sector": "TECNOLOGIA", "employees": 1, "equipment": "Computadores de mesa", "energy_practice": "Sim", "energy_actions": "Desligar equipamentos quando não estão em uso", "efficient": "Sim", "old_equipment": "São armazenados", "recycling": "Não", "repair": "Depende do problema e do custo", "cloud": "Sim", "cloud_benefit": "Facilidade de acesso aos dados", "sustain_benefit": "Economia de energia", "policy": "Não"}], "metrics": {"people": 17, "companies": 3, "impact_yes": 14, "willing_yes": 15, "no_greenit": 15, "no_disposal_knowledge": 10, "no_collection": 15, "company_energy": 3, "company_cloud": 3, "company_efficient": 2, "company_recycling": 1, "company_policy": 1}, "metrics_pct": {"impact_yes": 82.4, "willing_yes": 88.2, "no_greenit": 88.2, "no_disposal_knowledge": 58.8, "no_collection": 88.2, "company_energy": 100.0, "company_cloud": 100.0, "company_efficient": 66.7, "company_recycling": 33.3, "company_policy": 33.3}};
+
+const q = (id)=>document.getElementById(id);
+const pct = (x,n)=> n ? (100*x/n).toFixed(1)+'%' : '0%';
+function options(id, vals){
+  const el=q(id); el.innerHTML='<option value="__ALL__">Todos</option>'+[...new Set(vals)].filter(Boolean).sort().map(v=>`<option>${esc(v)}</option>`).join('');
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+options('age',DB.people.map(x=>x.age)); options('relation',DB.people.map(x=>x.relation)); options('sector',DB.companies.map(x=>x.sector));
+
+function filteredPeople(){
+  const a=q('age').value, r=q('relation').value;
+  return DB.people.filter(x=>(a==='__ALL__'||x.age===a)&&(r==='__ALL__'||x.relation===r));
+}
+function filteredCompanies(){
+  const s=q('sector').value; return DB.companies.filter(x=>s==='__ALL__'||x.sector===s);
+}
+function vals(rows,key){let m={}; rows.forEach(x=>{if(x[key])m[x[key]]=(m[x[key]]||0)+1}); return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+function bar(id,title,rows,key){
+  const v=vals(rows,key);
+  Plotly.newPlot(id,[{type:'bar',x:v.map(x=>x[0]),y:v.map(x=>x[1]),hovertemplate:'%{x}<br>%{y} respostas<extra></extra>'}],
+    {title:{text:title,font:{size:16}},margin:{l:50,r:20,t:55,b:100},paper_bgcolor:'white',plot_bgcolor:'white',yaxis:{dtick:1},font:{family:'Inter, Arial'},showlegend:false}, {responsive:true,displayModeBar:false});
+}
+function horizontal(id,title,labels,values,suffix=''){
+ Plotly.newPlot(id,[{type:'bar',orientation:'h',y:labels,x:values,hovertemplate:'%{y}<br>%{x}'+suffix+'<extra></extra>'}],
+ {title:{text:title,font:{size:16}},margin:{l:190,r:25,t:55,b:45},paper_bgcolor:'white',plot_bgcolor:'white',font:{family:'Inter, Arial'},xaxis:{range:[0,100],ticksuffix:suffix},showlegend:false},{responsive:true,displayModeBar:false});
+}
+function updatePeople(){
+ const rows=filteredPeople(), n=rows.length;
+ bar('c1','Frequência de uso de equipamentos',rows,'hours');
+ bar('c2','Desligamento quando não estão em uso',rows,'turnoff');
+ bar('c3','Uso de recursos de economia de energia',rows,'energy');
+ bar('c4','Conhecimento sobre descarte correto',rows,'know_disposal');
+ const impact=rows.filter(x=>x.impact==='Sim').length;
+ q('insights').innerHTML=`<p><strong>${pct(impact,n)}</strong> dos participantes filtrados afirmam que o uso consciente da tecnologia pode ajudar a reduzir impactos ambientais.</p>
+ <p><strong>${pct(rows.filter(x=>x.change==='Sim',).length,n)}</strong> afirmam estar dispostos a mudar algum hábito para tornar o uso da tecnologia mais sustentável.</p>`;
+}
+function updateCompanies(){
+ const rows=filteredCompanies(), n=rows.length;
+ const labels=['Economia de energia','Computação em nuvem','Equipamentos eficientes','Reciclagem/descarte','Política de sustentabilidade'];
+ const keys=['energy_practice','cloud','efficient','recycling','policy'];
+ const yes=keys.map(k=>rows.filter(x=>x[k]==='Sim').length);
+ horizontal('e1','Adoção de práticas de TI Verde',labels,yes.map(x=>n?100*x/n:0),'%');
+ bar('e2','Benefícios de sustentabilidade percebidos',rows,'sustain_benefit');
+ bar('e3','Destino de equipamentos sem uso',rows,'old_equipment');
+ bar('e4','Decisão diante de equipamento com defeito',rows,'repair');
+}
+function renderKpis(){
+ const m=DB.metrics, p=DB.metrics_pct;
+ const items=[
+  [m.people,'Participantes'],
+  [m.companies,'Empresas'],
+  [p.impact_yes+'%','Veem potencial de redução de impactos'],
+  [p.willing_yes+'%','Dispostos a mudar hábitos'],
+  [p.no_collection+'%','Nunca levaram eletrônico a ponto de coleta']
+ ];
+ q('kpis').innerHTML=items.map(x=>`<div class="kpi"><div class="num">${x[0]}</div><div class="label">${x[1]}</div></div>`).join('');
+}
+['age','relation'].forEach(id=>q(id).addEventListener('change',updatePeople));
+q('sector').addEventListener('change',updateCompanies);
+renderKpis(); updatePeople(); updateCompanies();
+</script>
+</body>
+</html>
